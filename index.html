@@ -4,37 +4,249 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Re:Mimir — 「今ならできる」を待ってくれるリマインダー</title>
+<meta name="description" content="通知に「やった」か「まだ」で返事するだけの習慣化リマインダー。できなかった日も責めません。やった日は星になって、消えずに残ります。">
 <style>
-  :root { color-scheme: light; }
+  :root {
+    color-scheme: light;
+    --paper: #F6F3EE;
+    --card: #FFFFFF;
+    --border: #EAE3DA;
+    --ink: #2B2420;
+    --sub: #6E635A;
+    --accent: #E8826B;
+    --accent-ink: #C75B44;
+    --gold: #E8B04B;
+    --night: #362B22;
+    --sand: #E7DFCF;
+  }
+  * { box-sizing: border-box; }
   body {
-    margin: 0; background: #F6F3EE; color: #2B2420;
+    margin: 0; background: var(--paper); color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
-    line-height: 1.8;
+    line-height: 1.9;
   }
-  main { max-width: 640px; margin: 0 auto; padding: 72px 20px 80px; text-align: center; }
-  h1 { font-size: 34px; margin: 0; }
-  .subtitle { font-size: 16px; color: #6E635A; margin-top: 8px; }
-  .desc {
-    background: #FFFFFF; border: 1px solid #EAE3DA; border-radius: 10px;
-    padding: 18px 22px; margin-top: 36px; text-align: left; font-size: 15px;
+  main { max-width: 720px; margin: 0 auto; padding: 0 20px 72px; }
+  section { margin-top: 72px; }
+  h2 { font-size: 21px; margin: 0 0 16px; }
+  p { font-size: 15px; margin: 10px 0; }
+  .sub { color: var(--sub); }
+  /* 見出し系はフレーズ単位で折り返す(「リマインダー」等の語中改行を防ぐ) */
+  .phrase { display: inline-block; }
+
+  /* ヒーロー */
+  .hero { text-align: center; padding-top: 84px; }
+  .mark {
+    width: 22px; height: 22px; background: var(--gold); border-radius: 3px;
+    transform: rotate(45deg); margin: 0 auto 26px;
   }
-  .links { margin-top: 36px; font-size: 15px; }
-  .links a { color: #C75B44; }
-  .support { margin-top: 28px; font-size: 13px; color: #6E635A; }
-  footer { color: #6E635A; font-size: 12px; margin-top: 64px; }
+  .hero h1 { font-size: 44px; margin: 0; letter-spacing: 0.01em; }
+  .tagline { font-size: 17px; font-weight: 700; margin-top: 10px; }
+  .promo { max-width: 460px; margin: 18px auto 0; }
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 26px; }
+  .badge {
+    font-size: 12px; font-weight: 700; color: var(--sub);
+    background: var(--card); border: 1px solid var(--border); border-radius: 8px;
+    padding: 5px 12px;
+  }
+
+  /* 対句 */
+  .couplet {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 34px 26px; text-align: center;
+  }
+  .couplet p { font-size: 19px; font-weight: 700; line-height: 2.1; margin: 0; }
+
+  /* 使い方 */
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .step {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; text-align: center;
+  }
+  .step .num {
+    display: inline-block; width: 26px; height: 26px; line-height: 26px;
+    background: var(--accent); color: #fff; font-weight: 800; font-size: 13px;
+    border-radius: 8px; margin-bottom: 8px;
+  }
+  .step p { font-size: 13.5px; margin: 0; }
+  .buttons { display: flex; gap: 8px; justify-content: center; margin-top: 10px; }
+  .btn-done, .btn-later {
+    font-size: 12px; font-weight: 800; border-radius: 8px; padding: 4px 14px;
+  }
+  .btn-done { background: var(--accent); color: #fff; }
+  .btn-later { border: 1px solid var(--accent); color: var(--accent-ink); background: var(--card); }
+
+  /* 3つの世界 */
+  .worlds { display: grid; gap: 14px; }
+  .world {
+    border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+    background: var(--card);
+  }
+  .world svg { display: block; width: 100%; height: auto; }
+  .world .txt { padding: 16px 20px 18px; }
+  .world .tab { font-size: 11px; font-weight: 800; color: var(--sub); letter-spacing: 0.08em; }
+  .world h3 { font-size: 17px; margin: 4px 0 6px; }
+  .world p { font-size: 13.5px; margin: 0; color: var(--ink); }
+  .world .copy { font-weight: 800; margin-top: 8px; color: var(--accent-ink); }
+  .night-copy { color: var(--gold) !important; }
+
+  /* 相棒 */
+  .buddy {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 26px 24px; text-align: center;
+  }
+  .buddy .face { font-size: 44px; line-height: 1; }
+  .buddy h2 { margin-top: 12px; }
+  .buddy .lore { max-width: 480px; margin: 8px auto 0; font-size: 13.5px; }
+
+  /* 哲学 */
+  .quiet { text-align: center; }
+  .quiet .line { font-size: 16px; font-weight: 700; }
+
+  footer {
+    border-top: 1px solid var(--border); margin-top: 84px; padding: 28px 20px 48px;
+    text-align: center; font-size: 13px; color: var(--sub);
+  }
+  footer a { color: var(--accent-ink); }
+  .fineprint { font-size: 11.5px; margin-top: 10px; }
+
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 36px; }
+    .steps { grid-template-columns: 1fr; }
+    /* 「リマインダー」の途中で折り返して長音だけの行ができるのを防ぐ */
+    .tagline { max-width: 19em; margin-left: auto; margin-right: auto; }
+    .couplet p { font-size: 16px; }
+  }
 </style>
 </head>
 <body>
 <main>
-  <h1>Re:Mimir</h1>
-  <p class="subtitle">「今ならできる」を待ってくれるリマインダー</p>
-  <div class="desc">
-    <p>通知に「やった」か「まだ」で返事するだけの習慣化リマインダーです。できなかった日も責めません。やった日は星になって、消えずに残ります。</p>
-    <p>データはすべて端末の中だけ。アカウント登録も、広告も、トラッキングもありません。</p>
-  </div>
-  <p class="links"><a href="./privacy.html">プライバシーポリシー / Privacy Policy</a></p>
-  <p class="support">サポート（お問い合わせ）: サポート用メールアドレスは準備中です。公開までにこのページに掲載します。</p>
-  <footer>© 2026 Re:Mimir</footer>
+  <header class="hero">
+    <div class="mark" aria-hidden="true"></div>
+    <h1>Re:Mimir</h1>
+    <p class="tagline"><span class="phrase">「今ならできる」を</span><span class="phrase">待ってくれるリマインダー</span></p>
+    <p class="promo">「まだ」と返事ができるリマインダーです。できなかった日も責めません。やった日は星になって、消えずに残ります。まずは1件、無料で。</p>
+    <div class="badges">
+      <span class="badge">ダウンロード無料</span>
+      <span class="badge">夜は通知しません</span>
+      <span class="badge">データは端末の中だけ</span>
+    </div>
+  </header>
+
+  <section class="couplet" aria-label="コンセプト">
+    <p><span class="phrase">「やった」と返したら、</span><span class="phrase">ことばが返ってきた。</span><br><span class="phrase">「まだ」と返したら、</span><span class="phrase">待ってくれた。</span></p>
+  </section>
+
+  <section aria-label="使い方">
+    <h2>使い方は、通知に返事するだけ</h2>
+    <div class="steps">
+      <div class="step"><span class="num">1</span><p>続けたいことを<br>1つ登録する</p></div>
+      <div class="step"><span class="num">2</span><p>決めた時間に<br>通知が来る</p></div>
+      <div class="step">
+        <span class="num">3</span>
+        <p>ボタンを押す。これだけ</p>
+        <div class="buttons" aria-hidden="true"><span class="btn-done">やった！</span><span class="btn-later">まだ…</span></div>
+      </div>
+    </div>
+    <p class="sub" style="margin-top:14px">「まだ」のときは、いつ聞き直すかをあなたが選べます。<strong>いつやるかは、あなたが決める。</strong></p>
+  </section>
+
+  <section aria-label="3つの世界">
+    <h2>記録は、風景になる</h2>
+    <div class="worlds">
+
+      <div class="world">
+        <svg viewBox="0 0 360 96" shape-rendering="crispEdges" role="img" aria-label="緑の山のピクセルアート">
+          <rect width="360" height="96" fill="#F6F3EE"/>
+          <rect y="84" width="360" height="12" fill="#E7DFCF"/>
+          <g fill="#BFE3C6">
+            <rect x="24" y="72" width="312" height="12"/>
+            <rect x="48" y="60" width="264" height="12"/>
+          </g>
+          <g fill="#7CC28B">
+            <rect x="84" y="48" width="192" height="12"/>
+            <rect x="120" y="36" width="120" height="12"/>
+          </g>
+          <g fill="#3AA655">
+            <rect x="150" y="24" width="60" height="12"/>
+            <rect x="168" y="12" width="24" height="12"/>
+          </g>
+          <rect x="176" y="2" width="8" height="8" fill="#E8B04B" transform="rotate(45 180 6)"/>
+        </svg>
+        <div class="txt">
+          <span class="tab">ホーム — 昼</span>
+          <h3>継続の山</h3>
+          <p>「やった」のぶんだけ、山が育ちます。いま登っている場所が、今日のあなたの現在地。</p>
+        </div>
+      </div>
+
+      <div class="world">
+        <svg viewBox="0 0 360 96" shape-rendering="crispEdges" role="img" aria-label="星の夜空のピクセルアート">
+          <rect width="360" height="96" fill="#362B22"/>
+          <g fill="#F6F3EE">
+            <rect x="40" y="30" width="4" height="4"/><rect x="92" y="58" width="4" height="4"/>
+            <rect x="140" y="22" width="4" height="4"/><rect x="205" y="46" width="4" height="4"/>
+            <rect x="255" y="18" width="4" height="4"/><rect x="300" y="52" width="4" height="4"/>
+            <rect x="70" y="74" width="4" height="4"/><rect x="326" y="30" width="4" height="4"/>
+            <rect x="170" y="64" width="4" height="4"/><rect x="232" y="76" width="4" height="4"/>
+          </g>
+          <g fill="#E8B04B">
+            <rect x="118" y="42" width="5" height="5"/><rect x="282" y="66" width="5" height="5"/>
+          </g>
+          <rect x="176" y="34" width="9" height="9" fill="#E8B04B" transform="rotate(45 180.5 38.5)"/>
+        </svg>
+        <div class="txt">
+          <span class="tab">記録 — 夜</span>
+          <h3>達成の星空</h3>
+          <p>やった日は星に、ぜんぶやった日は金の星になります。何日空いても、星は消えません。</p>
+          <p class="copy night-copy">積み上げは、消えない。</p>
+        </div>
+      </div>
+
+      <div class="world">
+        <svg viewBox="0 0 360 96" shape-rendering="crispEdges" role="img" aria-label="夕方の海のピクセルアート">
+          <rect width="360" height="96" fill="#F6EFE6"/>
+          <rect y="40" width="360" height="56" fill="#CFE0DC"/>
+          <g fill="#A8C9C4">
+            <rect x="0" y="52" width="360" height="10"/>
+            <rect x="0" y="74" width="360" height="10"/>
+          </g>
+          <g fill="#7FB0AA">
+            <rect x="30" y="46" width="16" height="4"/><rect x="120" y="68" width="16" height="4"/>
+            <rect x="230" y="48" width="16" height="4"/><rect x="300" y="70" width="16" height="4"/>
+          </g>
+          <g fill="#E8826B">
+            <rect x="180" y="60" width="10" height="6"/><rect x="190" y="62" width="4" height="2"/>
+          </g>
+          <!-- 夕日は水平線に接して沈みかけの姿にする(浮いた金の四角に見えないように) -->
+          <rect x="296" y="26" width="16" height="14" fill="#E8B04B" opacity="0.9"/>
+        </svg>
+        <div class="txt">
+          <span class="tab">いつか — 夕</span>
+          <h3>いつかの海</h3>
+          <p>いつかやりたいことは、海の中で育てます。温めるほど水面に近づき、時が来たら迎えられます。</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="buddy" aria-label="相棒">
+    <div class="face" aria-hidden="true">🐤</div>
+    <h2>一人だけど、独りじゃない。</h2>
+    <p class="lore">相棒は「ミミル」— 動物の姿を借りた、記憶の泉に住む小さな番人です。あなたの約束をひとつ預かって、「やった」と「まだ」を聞きに来ます。最初の相棒はひよこ。続けるほど、新しいミミルに出会えます。</p>
+  </section>
+
+  <section class="quiet" aria-label="約束">
+    <h2>このアプリの約束</h2>
+    <p class="line">責めない。急かさない。静か。</p>
+    <p class="sub" style="max-width:460px;margin:8px auto 0">「まだ」も正直な記録として大切にします。夜は通知しません。しつこく追いかけず、「今日はもう聞きません」と引き下がります。</p>
+  </section>
 </main>
+
+<footer>
+  <p><a href="./privacy.html">プライバシーポリシー / Privacy Policy</a></p>
+  <p class="fineprint">サポート（お問い合わせ）: サポート用メールアドレスは準備中です。公開までにこのページに掲載します。</p>
+  <p class="fineprint">© 2026 Re:Mimir</p>
+</footer>
 </body>
 </html>
